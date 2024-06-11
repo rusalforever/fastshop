@@ -1,0 +1,101 @@
+[tool.poetry]
+name = "fastshop"
+version = "0.1.0"
+description = ""
+authors = ["marcustas <marcustas@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0.post1"
+asyncpg = "^0.29.0"
+ruff = "^0.1.6"
+pydantic-settings = "^2.1.0"
+sqlalchemy = "^2.0.23"
+async-sqlalchemy = "^1.0.0"
+sqlalchemy-i18n = "^1.1.0"
+alembic = "^1.12.1"
+greenlet = "^3.0.1"
+psycopg2-binary = "^2.9.9"
+sqladmin = "^0.16.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+combine_as_imports = true
+force_grid_wrap = 2
+include_trailing_comma = true
+line_length = 120
+multi_line_output = 3
+
+[tool.ruff]
+extend-exclude = [
+    "*/__init__.py",
+    "*/ops",
+    "requirements-environment",
+    "alembic/",
+]
+line-length = 120
+ignore = [
+    "ANN003",
+    "ANN101",
+    "ANN102",
+    "ANN204",
+    "ANN401",
+    "B008",
+    "D105",
+    "D107",
+    "D200",
+    "D204",
+    "D413",
+    "F722",
+    "B904",
+    "N818",
+    "Q000",
+    "Q003",
+]
+select = [
+    "B", # flake8-bugbear
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    "ERA", # eradicate
+    "T20", # flake8-print
+    "Q", # flake8-quotes
+    "I", # isort
+    "N", # pep8-naming
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+]
+
+[tool.ruff.pep8-naming]
+classmethod-decorators = [
+    "classmethod",
+    "pydantic.field_validator",
+    "pydantic.model_validator",
+]
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+
+[tool.ruff.isort]
+split-on-trailing-comma = true
+force-wrap-aliases = true
+combine-as-imports = true
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = false
+
+[tool.pytest.ini_options]
+env_override_existing_values = 1
+env_files = [
+    "./ops/environment/.test.env"
+]
