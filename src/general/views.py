@@ -6,8 +6,8 @@ from fastapi import (
     status,
 )
 
+from src.common.schemas.common import DetailsResponse
 from src.general.routes import GeneralRoutesPrefixes
-from src.general.schemas.common import DetailsResponse
 
 
 router = APIRouter()

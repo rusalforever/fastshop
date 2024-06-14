@@ -5,7 +5,7 @@ from sqlalchemy import (
     String,
 )
 
-from src.general.databases.postgres import Base
+from src.common.databases.postgres import Base
 
 
 class Company(Base):

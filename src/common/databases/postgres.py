@@ -41,3 +41,8 @@ class Database:
 
 
 postgres = Database()
+
+
+async def get_session():
+    async for session in postgres.get_db():
+        yield session

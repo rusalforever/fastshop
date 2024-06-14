@@ -3,7 +3,8 @@ from sqladmin import Admin
 
 from src.admin import register_admin_views
 from src.base_settings import base_settings
-from src.general.databases.postgres import postgres
+from src.catalogue.views import product_router
+from src.common.databases.postgres import postgres
 from src.general.views import router as status_router
 from src.routes import BaseRoutesPrefixes
 
@@ -11,6 +12,11 @@ from src.routes import BaseRoutesPrefixes
 def include_routes(application: FastAPI) -> None:
     application.include_router(
         router=status_router,
+    )
+    application.include_router(
+        router=product_router,
+        prefix=BaseRoutesPrefixes.catalogue,
+        tags=['Catalogue'],
     )
 
 
