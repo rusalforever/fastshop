@@ -2,23 +2,33 @@ from fastapi import FastAPI
 from sqladmin import Admin
 
 from src.admin import register_admin_views
+from src.authentication.views import router as auth_router
 from src.base_settings import base_settings
 from src.catalogue.views import product_router
 from src.common.databases.postgres import postgres
 from src.general.views import router as status_router
 from src.routes import BaseRoutesPrefixes
-
+from src.users.views import user_router
 
 def include_routes(application: FastAPI) -> None:
     application.include_router(
         router=status_router,
     )
     application.include_router(
+        router=auth_router,
+        prefix=BaseRoutesPrefixes.authentication,
+        tags=['Authentication'],
+    )
+    application.include_router(
         router=product_router,
         prefix=BaseRoutesPrefixes.catalogue,
         tags=['Catalogue'],
     )
-
+    application.include_router(
+            router=user_router,
+            prefix=BaseRoutesPrefixes.account,
+            tags=['Account'],
+        )
 
 def get_application() -> FastAPI:
     application = FastAPI(

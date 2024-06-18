@@ -6,6 +6,7 @@ from src.catalogue.models.sqlalchemy import Product
 from src.common.databases.postgres import (
     get_session,
 )
+from src.common.databases.postgres import get_session
 from src.common.repository.sqlalchemy import BaseSQLAlchemyRepository
 
 

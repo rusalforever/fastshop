@@ -15,24 +15,20 @@ from src.catalogue.routes import (
     CatalogueRoutesPrefixes,
     ProductRoutesPrefixes,
 )
-from src.catalogue.services import (
-    get_product_service,
-)
+from src.catalogue.services import get_product_service
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.schemas.common import ErrorResponse
 
 
-product_router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
+router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
 
 
-@product_router.get(
+@router.get(
     ProductRoutesPrefixes.root,
     status_code=status.HTTP_200_OK,
     response_model=list[ProductModel],
 )
-# async def product_list(product_service: Annotated[get_product_service, Depends()]) -> list[ProductModel]:
-async def product_list(product_service=Depends(get_product_service)) -> list[ProductModel]:
-
+async def product_list(product_service: Annotated[get_product_service, Depends()]) -> list[ProductModel]:
     """
     Get list of products.
 
@@ -42,7 +38,7 @@ async def product_list(product_service=Depends(get_product_service)) -> list[Pro
     return await product_service.list()
 
 
-@product_router.get(
+@router.get(
     ProductRoutesPrefixes.detail,
     responses={
         status.HTTP_200_OK: {'model': ProductModel},
