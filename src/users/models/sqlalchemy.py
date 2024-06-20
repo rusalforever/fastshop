@@ -1,4 +1,5 @@
 from datetime import datetime
+import enum
 
 from sqlalchemy import (
     Boolean,
@@ -7,6 +8,8 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Numeric,
+    Enum,
 )
 from sqlalchemy.orm import relationship
 
@@ -50,3 +53,19 @@ class UserAddress(Base):
     additional_info = Column(String, nullable=True)
 
     user = relationship('User', back_populates='addresses')
+
+class BasketStatus(enum.Enum):
+    OPEN = 'Open'
+    CLOSED = 'Closed'
+    CANCELLED = 'Cancelled'
+
+
+class Basket(Base):
+
+    __tablename__ = 'basket'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    price = Column(Numeric(precision=10, scale=2), nullable=False)
+    status = Column(Enum(BasketStatus), nullable=False)
+
+    user = relationship('User')
