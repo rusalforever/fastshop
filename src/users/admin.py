@@ -1,8 +1,9 @@
 from sqladmin import ModelView
+from sqlalchemy.sql.functions import user
 
 from src.users.models.sqlalchemy import (
     User,
-    UserAddress,
+    UserAddress, Basket,
 )
 
 
@@ -23,6 +24,14 @@ class UserAddressAdmin(ModelView, model=UserAddress):
     category = ADMIN_CATEGORY
 
 
+class BasketAdmin(ModelView, model=Basket):
+    icon = 'fa-solid fa-basket-shopping'
+    column_list = [Basket.id, Basket.price, Basket.status, Basket.user_id]
+    column_searchable_list = [Basket.price, Basket.user_id, Basket.status]
+    category = ADMIN_CATEGORY
+
+
 def register_hr_admin_views(admin):
     admin.add_view(UserAdmin)
     admin.add_view(UserAddressAdmin)
+    admin.add_view(BasketAdmin)

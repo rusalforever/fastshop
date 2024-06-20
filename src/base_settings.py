@@ -32,4 +32,4 @@ class ProjectSettings(BaseSettings):
     )
 
 
-base_settings = ProjectSettings()
+base_settings = ProjectSettings(api_key='')
