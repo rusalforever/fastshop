@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -7,10 +6,12 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    DECIMAL,
+    Enum
 )
 from sqlalchemy.orm import relationship
-
 from src.general.databases.postgres import Base
+import enum
 
 
 class User(Base):
@@ -50,3 +51,23 @@ class UserAddress(Base):
     additional_info = Column(String, nullable=True)
 
     user = relationship('User', back_populates='addresses')
+
+
+class BasketStatusEnum(enum.Enum):
+    Open = 'Open'
+    Closed = 'Closed'
+    Cancelled = 'Cancelled'
+
+
+class Basket(Base):
+    __tablename__ = 'basket'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    price = Column(DECIMAL, nullable=False)
+    status = Column(Enum(BasketStatusEnum), nullable=False)
+
+    user = relationship('User')
+
+    def __str__(self):
+        return f'Basket {self.id} - {self.status}'
