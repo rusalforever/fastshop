@@ -9,6 +9,15 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
+class MongoSettings(BaseModel):
+    """
+    Provide Mongo settings.
+    """
+
+    url: str = 'mongodb://mongo-db:27017/fastshop'
+    direct_connection: bool = False
+    const_status_prepared: str = 'prepared'
+
 
 class PostgresSettings(BaseModel):
     user: str = 'user'
@@ -33,6 +42,7 @@ class ProjectSettings(BaseSettings):
 
     postgres: PostgresSettings = PostgresSettings()
     auth: AuthorizationSettings
+    mongo: MongoSettings = MongoSettings()
 
     model_config = SettingsConfigDict(
         env_nested_delimiter='__',

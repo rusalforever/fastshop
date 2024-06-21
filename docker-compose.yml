@@ -9,13 +9,29 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - mongo-db
     networks:
       - web_network
+
+  mongo-db:
+    image: mongo:latest
+    container_name: fastshop-mongo-db
+    networks:
+      - web_network
+    restart: always
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/mongodb
+      - ./ops/scripts/mongo:/docker-entrypoint-initdb.d
 
   db:
     image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -25,6 +41,7 @@ services:
 
 volumes:
   postgres_data:
+  mongodb:
 
 networks:
   web_network:
