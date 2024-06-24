@@ -69,3 +69,4 @@ def register_products_admin_views(admin):
     admin.add_view(ProductImageAdmin)
     admin.add_view(StockRecordAdmin)
     admin.add_view(ProductDiscountAdmin)
+    admin.add_view(CategoryAdmin)
