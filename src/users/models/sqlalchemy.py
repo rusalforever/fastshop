@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -7,16 +6,24 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Numeric,
+    Enum,
 )
 from sqlalchemy.orm import relationship
-
 from src.general.databases.postgres import Base
+import enum
+
+
+class BasketStatusEnum(enum.Enum):
+    OPEN = "Open"
+    CLOSED = "Closed"
+    CANCELLED = "Cancelled"
 
 
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, index=True)  # noqa: A003
+    id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
     phone_number = Column(String, unique=True, index=True)
     hashed_password = Column(String)
@@ -30,6 +37,7 @@ class User(Base):
     is_temporary = Column(Boolean, default=False)
 
     addresses = relationship('UserAddress', back_populates='user')
+    baskets = relationship('Basket', back_populates='user')
 
     def __str__(self):
         return self.email
@@ -38,7 +46,7 @@ class User(Base):
 class UserAddress(Base):
     __tablename__ = 'user_addresses'
 
-    id = Column(Integer, primary_key=True, index=True)  # noqa: A003
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     title = Column(String, nullable=True)
     city = Column(String)
@@ -50,3 +58,14 @@ class UserAddress(Base):
     additional_info = Column(String, nullable=True)
 
     user = relationship('User', back_populates='addresses')
+
+
+class Basket(Base):
+    __tablename__ = 'baskets'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    price = Column(Numeric, nullable=False)
+    status = Column(Enum(BasketStatusEnum), nullable=False)
+
+    user = relationship('User', back_populates='baskets')

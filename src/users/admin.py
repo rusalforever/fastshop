@@ -3,8 +3,8 @@ from sqladmin import ModelView
 from src.users.models.sqlalchemy import (
     User,
     UserAddress,
+    Basket,
 )
-
 
 ADMIN_CATEGORY = 'Accounts'
 
@@ -23,6 +23,15 @@ class UserAddressAdmin(ModelView, model=UserAddress):
     category = ADMIN_CATEGORY
 
 
+class BasketAdmin(ModelView, model=Basket):
+    column_list = [Basket.id, Basket.user_id, Basket.price, Basket.status]
+    column_searchable_list = [Basket.id, Basket.user_id, Basket.price]
+    name = "Basket"
+    category = "Orders"
+    icon = "fa fa-shopping-basket"
+
+
 def register_hr_admin_views(admin):
     admin.add_view(UserAdmin)
     admin.add_view(UserAddressAdmin)
+    admin.add_view(BasketAdmin)
