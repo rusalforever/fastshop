@@ -5,19 +5,15 @@ from fastapi import (
     HTTPException,
     status,
 )
-from fastapi.security import (
-    OAuth2PasswordBearer,
-)
+from fastapi.security import OAuth2PasswordBearer
 from jose import (
     JWTError,
     jwt,
 )
 
 from src.base_settings import base_settings
-from src.users.models.pydantic import UserModel
-from src.users.services import (
-    get_user_service,
-)
+from src.users.models.database import User
+from src.users.services import get_user_service
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -26,7 +22,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 async def get_current_user(
     service: Annotated[get_user_service, Depends()],
     token: Annotated[str, Depends(oauth2_scheme)],
-) -> UserModel:
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -48,7 +44,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: Annotated[UserModel, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")

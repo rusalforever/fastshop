@@ -6,4 +6,3 @@ class BaseRoutesPrefixes:
     catalogue: str = '/catalogue'
     authentication: str = '/auth'
     account: str = '/account'
-    reviews: str = '/reviews'

@@ -12,16 +12,10 @@ from fastapi import (
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.authentication import security
-from src.authentication.models import (
-    Token,
-)
-from src.authentication.routes import (
-    AuthRoutesPrefixes,
-)
+from src.authentication.models import Token
+from src.authentication.routes import AuthRoutesPrefixes
 from src.base_settings import base_settings
-from src.users.services import (
-    get_user_service,
-)
+from src.users.services import get_user_service
 
 
 router = APIRouter()

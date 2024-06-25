@@ -1,48 +1,25 @@
-import logging
-
-from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,
-    create_async_engine,
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import (
+    SQLModel,
+    create_engine,
 )
-from sqlalchemy.orm import declarative_base
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.base_settings import base_settings
 
 
-logger = logging.getLogger(__name__)
-
-Base = declarative_base()
+engine = AsyncEngine(create_engine(base_settings.postgres.url, echo=True, future=True))
 
 
-class Database:
-    def __init__(self):
-        self.__session = None
-        self._engine = None
-
-    def connect(self, db_config):
-        self._engine = create_async_engine(
-            url=base_settings.postgres.url,
-        )
-
-        self.__session = async_sessionmaker(
-            bind=self._engine,
-            autocommit=False,
-        )
-
-    async def disconnect(self):
-        await self._engine.dispose()
-
-    def get_engine(self):
-        return self._engine
-
-    async def get_db(self):
-        async with postgres.__session() as session:
-            yield session
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
 
 
-postgres = Database()
-
-
-async def get_session():
-    async for session in postgres.get_db():
+async def get_session() -> AsyncSession:
+    async_session = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False,
+    )
+    async with async_session() as session:
         yield session

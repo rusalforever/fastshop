@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from sqladmin import Admin
 
@@ -5,12 +7,20 @@ from src.admin import register_admin_views
 from src.authentication.views import router as auth_router
 from src.base_settings import base_settings
 from src.catalogue.views import product_router
-from src.common.databases.mongo_db import init_mongo_db
-from src.common.databases.postgres import postgres
+from src.common.databases.postgres import (
+    engine,
+    init_db,
+)
 from src.general.views import router as status_router
-from src.reviews.views import product_reviews_router
 from src.routes import BaseRoutesPrefixes
 from src.users.views import user_router
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):  # noqa: ARG001
+    await init_db()
+
+    yield
 
 
 def include_routes(application: FastAPI) -> None:
@@ -33,12 +43,6 @@ def include_routes(application: FastAPI) -> None:
         tags=['Account'],
     )
 
-    application.include_router(
-        router=product_reviews_router,
-        prefix=BaseRoutesPrefixes.reviews,
-        tags=['Reviews'],
-    )
-
 
 def get_application() -> FastAPI:
     application = FastAPI(
@@ -46,20 +50,11 @@ def get_application() -> FastAPI:
         docs_url=BaseRoutesPrefixes.swagger if base_settings.debug else None,
         redoc_url=BaseRoutesPrefixes.redoc if base_settings.debug else None,
         openapi_url=BaseRoutesPrefixes.openapi if base_settings.debug else None,
+        lifespan=lifespan,
     )
 
-    @application.on_event('startup')
-    async def startup():
-        postgres.connect(base_settings.postgres.url)
-        engine = postgres.get_engine()
-        admin = Admin(app=application, engine=engine)
-        register_admin_views(admin)
-
-        await init_mongo_db()
-
-    @application.on_event('shutdown')
-    async def shutdown():
-        await postgres.disconnect()
+    admin = Admin(app=application, engine=engine)
+    register_admin_views(admin)
 
     include_routes(application)
 

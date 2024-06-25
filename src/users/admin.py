@@ -1,6 +1,6 @@
 from sqladmin import ModelView
 
-from src.users.models.sqlalchemy import (
+from src.users.models.database import (
     User,
     UserAddress,
 )

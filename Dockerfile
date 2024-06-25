@@ -10,7 +10,4 @@ RUN poetry install --no-dev
 
 COPY . /app
 
-RUN chmod +x ops/start-api.sh
-
-
 CMD ["sh", "ops/start-api.sh"]

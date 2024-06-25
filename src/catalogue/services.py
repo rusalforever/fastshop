@@ -1,6 +1,6 @@
 from fastapi import Depends
 
-from src.catalogue.models.pydantic import ProductModel
+from src.catalogue.models.database import Product
 from src.catalogue.repository import (
     ProductRepository,
     get_product_repository,
@@ -8,7 +8,7 @@ from src.catalogue.repository import (
 from src.common.service import BaseService
 
 
-class ProductService(BaseService[ProductModel]):
+class ProductService(BaseService[Product]):
     def __init__(self, repository: ProductRepository):
         super().__init__(repository)
 

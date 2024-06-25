@@ -1,6 +1,6 @@
 from sqladmin import ModelView
 
-from src.catalogue.models.sqlalchemy import (
+from src.catalogue.models.database import (
     Category,
     Product,
     ProductCategory,

@@ -10,7 +10,7 @@ from fastapi import (
     status,
 )
 
-from src.catalogue.models.pydantic import ProductModel
+from src.catalogue.models.database import Product
 from src.catalogue.routes import (
     CatalogueRoutesPrefixes,
     ProductRoutesPrefixes,
@@ -26,9 +26,9 @@ router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
 @router.get(
     ProductRoutesPrefixes.root,
     status_code=status.HTTP_200_OK,
-    response_model=list[ProductModel],
+    response_model=list[Product],
 )
-async def product_list(product_service: Annotated[get_product_service, Depends()]) -> list[ProductModel]:
+async def product_list(product_service: Annotated[get_product_service, Depends()]) -> list[Product]:
     """
     Get list of products.
 
@@ -41,11 +41,11 @@ async def product_list(product_service: Annotated[get_product_service, Depends()
 @router.get(
     ProductRoutesPrefixes.detail,
     responses={
-        status.HTTP_200_OK: {'model': ProductModel},
+        status.HTTP_200_OK: {'model': Product},
         status.HTTP_404_NOT_FOUND: {'model': ErrorResponse},
     },
     status_code=status.HTTP_200_OK,
-    response_model=Union[ProductModel, ErrorResponse],
+    response_model=Union[Product, ErrorResponse],
 )
 async def product_detail(
     response: Response,
