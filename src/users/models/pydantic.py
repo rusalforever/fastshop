@@ -15,6 +15,7 @@ class UserModel(BaseModel):
     last_name: str
     email: EmailStr
     phone_number: str
+    hashed_password: str
 
 
 class UserWithPassword(UserModel):

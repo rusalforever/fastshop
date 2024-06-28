@@ -22,6 +22,9 @@ class ReadMixin:
 
 
 class WriteMixin:
+    def __init__(self):
+        self.repository = None
+
     async def create(self, instance_data: PType) -> PType:
         return await self.repository.create(instance_data)
 

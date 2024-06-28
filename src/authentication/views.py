@@ -13,24 +13,24 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.authentication import security
 from src.authentication.models import (
-    Token,
+    Token, PasswordModel,
 )
 from src.authentication.routes import (
     AuthRoutesPrefixes,
 )
+from src.authentication.security import get_password_hash
 from src.base_settings import base_settings
 from src.users.services import (
     get_user_service,
 )
-
 
 router = APIRouter()
 
 
 @router.post(AuthRoutesPrefixes.token, response_model=Token)
 async def get_token(
-    service: Annotated[get_user_service, Depends()],
-    form_data: OAuth2PasswordRequestForm = Depends(),
+        service: Annotated[get_user_service, Depends()],
+        form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
@@ -48,3 +48,10 @@ async def get_token(
         ),
         "token_type": "bearer",
     }
+
+
+@router.post("/hash-password/")
+async def hash_password(password_model: PasswordModel):
+    password = password_model.password
+    hashed_password = get_password_hash(password)
+    return {"hashed_password": hashed_password}
