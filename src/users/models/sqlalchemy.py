@@ -38,7 +38,7 @@ class User(Base):
 class UserAddress(Base):
     __tablename__ = 'user_addresses'
 
-    id = Column(Integer, primary_key=True, index=True)  # noqa: A003
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     title = Column(String, nullable=True)
     city = Column(String)
