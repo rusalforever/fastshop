@@ -1,6 +1,7 @@
 from typing import (
     Annotated,
     Union,
+    List
 )
 
 from fastapi import (
@@ -16,11 +17,15 @@ from src.catalogue.routes import (
     ProductRoutesPrefixes,
 )
 from src.catalogue.services import get_product_service
+from src.authentication.utils import get_current_user
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.schemas.common import ErrorResponse
 
+from src.users.models.pydantic import UserAddressModel, UserAddressBaseModel
+from src.users.services import UserAddressService, get_user_address_service
 
 router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
+user_address_router = APIRouter(prefix=CatalogueRoutesPrefixes.addresses)
 
 
 @router.get(
@@ -65,3 +70,37 @@ async def product_detail(
         return ErrorResponse(message=exc.message)
 
     return response
+
+
+@user_address_router.get(
+    ProductRoutesPrefixes.root,
+    response_model=List[UserAddressBaseModel],
+    status_code=status.HTTP_200_OK,
+)
+async def list_addresses(
+        user=Depends(get_current_user),
+        service: UserAddressService = Depends(get_user_address_service),
+) -> List[UserAddressBaseModel]:
+    return await service.get_addresses_by_user_id(user.id)
+
+
+@user_address_router.get(
+    ProductRoutesPrefixes.address_id,
+    response_model=Union[UserAddressModel, ErrorResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_address(
+        address_id: int,
+        response: Response,
+        user=Depends(get_current_user),
+        service: UserAddressService = Depends(get_user_address_service),
+) -> Union[UserAddressModel, ErrorResponse]:
+    try:
+        address = await service.detail(pk=address_id)
+        if address.user_id != user.id:
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return ErrorResponse(message="Access forbidden to this address")
+        return address
+    except ObjectDoesNotExistException as exc:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return ErrorResponse(message=exc.message)

@@ -9,6 +9,7 @@ from src.common.databases.postgres import postgres
 from src.general.views import router as status_router
 from src.routes import BaseRoutesPrefixes
 from src.users.views import user_router
+from src.users.views.user_address import user_address_router
 
 def include_routes(application: FastAPI) -> None:
     application.include_router(
@@ -29,6 +30,11 @@ def include_routes(application: FastAPI) -> None:
             prefix=BaseRoutesPrefixes.account,
             tags=['Account'],
         )
+    application.include_router(
+        router=user_address_router,
+        prefix=BaseRoutesPrefixes.users,
+        tags=['UserAddresses'],
+    )
 
 def get_application() -> FastAPI:
     application = FastAPI(
