@@ -1,11 +1,11 @@
-import uuid
-from typing import Optional
-
 from beanie import Document
 from pydantic import (
     BaseModel,
     Field,
 )
+from datetime import datetime
+import uuid
+from typing import Optional
 
 
 class Reply(BaseModel):
@@ -28,3 +28,11 @@ class ProductReview(Document, BaseProductReview):
 
     class Settings:
         name = 'productReviews'
+
+
+class ProductAnalytics(Document, BaseModel):
+    product_id: int
+    timestamp: datetime
+
+    class Settings:
+        name = 'productAnalytics'

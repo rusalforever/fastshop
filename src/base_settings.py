@@ -9,6 +9,7 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
+
 class MongoSettings(BaseModel):
     """
     Provide Mongo settings.

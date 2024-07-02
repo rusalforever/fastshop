@@ -1,20 +1,22 @@
+from datetime import datetime, timezone
 from typing import Annotated
 
+from beanie import Document
 from fastapi import Depends
 
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.service import BaseService
 from src.reviews.models.mongo import (
     ProductReview,
-    Reply,
+    Reply, ProductAnalytics,
 )
-from src.reviews.repositories import ProductReviewRepository
+from src.reviews.repositories import ProductReviewRepository, ProductAnalyticsRepository
 
 
 class ProductReviewService(BaseService):
     def __init__(
-        self,
-        repository: Annotated[ProductReviewRepository, Depends(ProductReviewRepository)],
+            self,
+            repository: Annotated[ProductReviewRepository, Depends(ProductReviewRepository)],
     ):
         super().__init__(repository=repository)
 
@@ -26,7 +28,7 @@ class ProductReviewService(BaseService):
                 tree.append(reply)
         return tree
 
-    async def detail_with_replies(self, pk: str) -> ProductReview:
+    async def detail_with_replies(self, pk: str) -> Document:
         review = await self.repository.get(pk=pk)
         if not review:
             raise ObjectDoesNotExistException()
@@ -44,3 +46,17 @@ class ProductReviewService(BaseService):
         review.replies.append(reply.model_dump())
 
         return await review.save()
+
+
+class ProductAnalyticsService(BaseService):
+    def __init__(self, repository: ProductAnalyticsRepository):
+        super().__init__(repository=repository)
+
+    async def record_visit_product(self, product_id: int):
+        visit = ProductAnalytics(product_id=product_id, timestamp=datetime.now(timezone.utc))
+        await visit.insert()
+
+
+def get_product_analytics_service() -> ProductAnalyticsService:
+    repository = ProductAnalyticsRepository()
+    return ProductAnalyticsService(repository=repository)
