@@ -15,7 +15,7 @@ from src.catalogue.routes import (
     CatalogueRoutesPrefixes,
     ProductRoutesPrefixes,
 )
-from src.catalogue.services import get_product_service
+from src.catalogue.services import get_product_service, ProductService
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.schemas.common import ErrorResponse
 from src.reviews.services import ProductAnalyticsService, get_product_analytics_service
@@ -39,7 +39,7 @@ async def product_list(product_service: Annotated[get_product_service, Depends()
 
 
 @router.get(
-    ProductRoutesPrefixes.detail,
+    "/products/detail/{pk}",
     responses={
         status.HTTP_200_OK: {'model': ProductModel},
         status.HTTP_404_NOT_FOUND: {'model': ErrorResponse},
@@ -50,14 +50,11 @@ async def product_list(product_service: Annotated[get_product_service, Depends()
 async def product_detail(
     response: Response,
     pk: int,
-    service: Annotated[get_product_service, Depends()],
-    analytics_service: ProductAnalyticsService = Depends(get_product_analytics_service),
+    service: ProductService = Depends(get_product_service),
+    analytics_service: ProductAnalyticsService = Depends(),
 ) -> Union[ProductModel, ErrorResponse]:
     """
-    Retrieve product.
-
-    Returns:
-        Response with product details.
+    Retrieve product and record analytics.
     """
     try:
         product = await service.detail(pk=pk)

@@ -49,12 +49,15 @@ class ProductReviewService(BaseService):
 
 
 class ProductAnalyticsService(BaseService):
-    def __init__(self, repository: ProductAnalyticsRepository):
+    def __init__(
+            self,
+            repository: ProductAnalyticsRepository = Depends(ProductAnalyticsRepository)
+    ):
         super().__init__(repository=repository)
 
     async def record_visit_product(self, product_id: int):
-        visit = ProductAnalytics(product_id=product_id, timestamp=datetime.now(timezone.utc))
-        await visit.insert()
+        analytics = await self.repository.create_analytics(product_id=product_id)
+        return analytics
 
 
 def get_product_analytics_service() -> ProductAnalyticsService:
