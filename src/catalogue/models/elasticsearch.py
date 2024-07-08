@@ -3,8 +3,8 @@ from elasticsearch_dsl import (
     Text,
 )
 
-
 PRODUCT_INDEX = 'products_index'
+CATEGORY_INDEX = 'categories_index'
 
 
 class ProductIndex(Document):
@@ -14,3 +14,11 @@ class ProductIndex(Document):
 
     class Index:
         name = PRODUCT_INDEX
+
+
+class CategoryIndex(Document):
+    title = Text()
+    description = Text()
+
+    class Index:
+        name = CATEGORY_INDEX

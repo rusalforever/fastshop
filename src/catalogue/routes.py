@@ -8,3 +8,8 @@ class CatalogueRoutesPrefixes:
 class ProductRoutesPrefixes(BaseCrudPrefixes):
     search: str = '/search'
     update_index: str = '/update-index'
+
+
+class CategoryRoutesPrefixes(BaseCrudPrefixes):
+    search: str = '/search'
+    update_category_index: str = '/update-category-index'
