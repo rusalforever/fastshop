@@ -9,8 +9,11 @@ from src.common.repository.sqlalchemy import BaseSQLAlchemyRepository
 from src.users.models.pydantic import (
     UserModel,
     UserWithPassword,
+    UserAddressTitle,
+    UserAddressModel,
 )
-from src.users.models.sqlalchemy import User
+from src.users.models.sqlalchemy import User, UserAddress
+from src.common.exceptions.base import ObjectDoesNotExistException
 
 
 class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
@@ -35,3 +38,28 @@ class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
 
 def get_user_repository(session: AsyncSession = Depends(get_session)) -> UserRepository:
     return UserRepository(session=session)
+
+
+class UserAddressRepository(BaseSQLAlchemyRepository):
+    def __init__(self, session: AsyncSession = Depends(get_session)):
+        super().__init__(model=UserAddress, pydantic_model=UserAddressTitle, session=session)
+
+    async def get_by_user_id(self, user_id: int) -> list[UserAddressTitle]:
+        stmt = select(self.model).where(self.model.user_id == user_id)
+        result = await self.session.execute(stmt)
+        res = []
+        for row in result.scalars().all():
+            res.append(UserAddressTitle.model_validate(row))
+        return res
+
+    async def get_by_id(self, id: int) -> Optional[UserAddressModel]:
+        stmt = select(self.model).where(self.model.id == id)
+        result = await self.session.execute(stmt)
+        user_address = result.scalar_one_or_none()
+        if not user_address:
+            raise ObjectDoesNotExistException()
+
+        return UserAddressModel.model_validate(user_address)
+
+def get_user_address_repository(session: AsyncSession = Depends(get_session)):
+    return UserAddressRepository(session=session)

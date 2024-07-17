@@ -19,3 +19,20 @@ class UserModel(BaseModel):
 
 class UserWithPassword(UserModel):
     hashed_password: str
+
+
+class UserAddressTitle(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+
+
+class UserAddressModel(UserAddressTitle):
+    city: str
+    street: str
+    house: str
+    apartment: str
+    post_code: str
+    floor: str
+    additional_info: str
