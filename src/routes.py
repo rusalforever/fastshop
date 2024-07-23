@@ -7,3 +7,4 @@ class BaseRoutesPrefixes:
     authentication: str = '/auth'
     account: str = '/account'
     reviews: str = '/reviews'
+
