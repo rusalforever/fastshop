@@ -45,7 +45,17 @@ class TaskStatusModel(BaseModel):
 
     @classmethod
     async def get_from_redis(cls, uuid: UUID) -> Optional['TaskStatusModel']:
-        if (redis_response := await redis.get(name=cls.get_redis_key(uuid=str(uuid)))) is not None:
-            return TaskStatusModel(**json.loads(redis_response))
+        name = cls.get_redis_key(uuid=str(uuid))
+        redis_response = await redis.get(name=name)
 
-        return None
+        if redis_response is not None:
+            data = json.loads(redis_response)
+            model = TaskStatusModel(**data)
+            return model
+        else:
+            return None
+        #
+        # if (redis_response := await redis.get(name=cls.get_redis_key(uuid=str(uuid)))) is not None:
+        #     return TaskStatusModel(**json.loads(redis_response))
+        #
+        # return None

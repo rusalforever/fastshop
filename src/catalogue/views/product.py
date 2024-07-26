@@ -12,6 +12,7 @@ from fastapi import (
 )
 
 from src.catalogue.models.database import Product
+from src.catalogue.models.pydantic import ProductCreate
 from src.catalogue.routes import (
     CatalogueRoutesPrefixes,
     ProductRoutesPrefixes,
@@ -21,7 +22,6 @@ from src.common.enums import TaskStatus
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.schemas.common import ErrorResponse
 from src.general.schemas.task_status import TaskStatusModel
-
 
 router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
 
@@ -51,9 +51,9 @@ async def product_list(product_service: Annotated[get_product_service, Depends()
     response_model=Union[Product, ErrorResponse],
 )
 async def product_detail(
-    response: Response,
-    pk: int,
-    service: Annotated[get_product_service, Depends()],
+        response: Response,
+        pk: int,
+        service: Annotated[get_product_service, Depends()],
 ) -> Union[Response, ErrorResponse]:
     """
     Retrieve product.
@@ -75,8 +75,8 @@ async def product_detail(
     status_code=status.HTTP_200_OK,
 )
 async def search(
-    keyword: str,
-    service: Annotated[get_product_service, Depends()],
+        keyword: str,
+        service: Annotated[get_product_service, Depends()],
 ):
     """
     Search products.
@@ -94,8 +94,8 @@ async def search(
     status_code=status.HTTP_200_OK,
 )
 async def update_elastic(
-    background_tasks: BackgroundTasks,
-    service: Annotated[get_product_service, Depends()],
+        background_tasks: BackgroundTasks,
+        service: Annotated[get_product_service, Depends()],
 ):
     """
     Update products index.
@@ -108,3 +108,23 @@ async def update_elastic(
     background_tasks.add_task(service.update_search_index, status_model.uuid)
 
     return await TaskStatusModel().get_from_redis(uuid=status_model.uuid)
+
+
+@router.post(
+    ProductRoutesPrefixes.root,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_product(
+        product_data: ProductCreate,
+        service: Annotated[get_product_service, Depends()],
+):
+    """
+    Create a new product.
+    Args:
+        product_data: The data of the product to be created.
+        service: Product service.
+    Returns:
+        The created product.
+    """
+    created_product = await service.create(instance_data=product_data)
+    return created_product

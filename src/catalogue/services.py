@@ -11,6 +11,7 @@ from src.catalogue.repository import (
 )
 from src.catalogue.utils import ProductElasticManager
 from src.common.enums import TaskStatus
+from src.common.kafka import producer
 from src.common.service import BaseService
 from src.general.schemas.task_status import TaskStatusModel
 
@@ -23,6 +24,14 @@ class ProductService(BaseService[Product]):
     async def search(keyword: str):
         result = await ProductElasticManager().search_product(keyword=keyword)
         return result
+
+    def _add_product_to_queue(self, instance_data):
+        producer.send('product-topic', instance_data.model_dump_json().encode('utf-8'))
+
+    async def create(self, instance_data):
+        instance = await super().create(instance_data=instance_data)
+        self._add_product_to_queue(instance_data=instance_data)
+        return instance
 
     async def update_search_index(self, uuid):
         products = await self.list()

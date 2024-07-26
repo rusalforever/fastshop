@@ -11,8 +11,8 @@ services:
       - ./ops/environment/.default.env
       - ./ops/environment/.local.env
     depends_on:
-#      db:
-#        condition: service_healthy
+      db:
+        condition: service_healthy
       elasticsearch:
         condition: service_healthy
     networks:
@@ -107,6 +107,60 @@ services:
     networks:
       - web_network
 
+  zookeeper-0:
+    image: confluentinc/cp-zookeeper:7.2.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok"
+    healthcheck:
+      test: [ "CMD-SHELL", "echo ruok | nc 127.0.0.1 2181 || exit -1" ]
+      interval: 5s
+      retries: 10
+    networks:
+      - web_network
+
+  kafka-0:
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      zookeeper-0:
+        condition: service_healthy
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-0:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://kafka-0:9092,PLAINTEXT_EXTERNAL://kafka-0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-0:9092,PLAINTEXT_EXTERNAL://127.0.0.1:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "/bin/kafka-topics", "--bootstrap-server", "kafka-0:9092", "--list" ]
+      interval: 5s
+      retries: 10
+    networks:
+      - web_network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.1
+    depends_on:
+      kafka-0:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: Local-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper-0:2181
+      SERVER_PORT: 8080
+    ports:
+      - "9080:8080"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health" ]
+      interval: 5s
+      retries: 10
+    networks:
+      - web_network
 volumes:
   postgres_data:
   redis_data:
