@@ -18,7 +18,7 @@ def read_queue():
             data = message.value
             print(json.dumps(data, indent=4, ensure_ascii=False))
             # Send product to Hotline
-        time.sleep(1)
+        time.sleep(30)
 
 
 if __name__ == '__main__':

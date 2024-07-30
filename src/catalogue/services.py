@@ -25,6 +25,9 @@ class ProductService(BaseService[Product]):
         result = await ProductElasticManager().search_product(keyword=keyword)
         return result
 
+    def filter(self, query: str):
+        return self.repository.filter(query=query)
+
     def _add_product_to_queue(self, instance_data):
         producer.send('product-topic', instance_data.model_dump_json().encode('utf-8'))
 

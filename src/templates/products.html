@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Product List</h1>
+    <form hx-get="/filter" hx-target="#products" hx-swap="innerHTML">
+        <label for="q">Search</label>
+        <input type="text" id="q" name="q" value="{{ query or '' }}" placeholder="Search products">
+        <button type="submit">Search</button>
+    </form>
+    {#    <form id="add-product-form" hx-get="/" onsubmit="submitProductForm(event)" hx-target="#products" hx-swap="innerHTML">#}
+    <form id="add-product-form" onsubmit="submitProductForm(event)" hx-target="#products" hx-swap="innerHTML">
+        <label for="title">Product Title:</label>
+        <input type="text" name="title" id="title" placeholder="Product ditle" required>
+        <label for="short_description">Product short_description:</label>
+        <input type="text" name="short_description" id="short_description" placeholder="Short description">
+        <label for="description">Product description:</label>
+        <input type="text" name="description" id="description" placeholder="Description">
+        <button type="submit">Add Product</button>
+    </form>
+    <div id="products">
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Short</th>
+                {#                <th>Description</th>#}
+                <th>Actions</th>
+            </tr>
+            {% for product in items %}
+                <tr hx-get="/{{ product.id }}" hx-target="#modal-body" hx-swap="innerHTML"
+                    hx-trigger="click" hx-on="htmx:afterRequest:openModal">
+                    <td>{{ product.title }}</td>
+                    <td>{{ product.short_description }}</td>
+                    {#                    <td>{{ product.description }}</td>#}
+                    <td>
+                        <button hx-get="/{{ product.id }}" hx-target="#modal-body" hx-swap="innerHTML"
+                                hx-trigger="click" hx-on="htmx:afterRequest:openModal">
+                            Edit
+                        </button>
+                        <button hx-delete="/{{ product.id }}" hx-target="#products" hx-swap="innerHTML">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="product-detail"></div>
+    <div id="edit-form"></div>
+{% endblock %}

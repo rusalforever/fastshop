@@ -1,0 +1,26 @@
+{#{% block content %}#}
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Short</th>
+{#        <th>Description</th>#}
+        <th>Actions</th>
+    </tr>
+    {% for product in items %}
+        <tr hx-get="/{{ product.id }}" hx-target="#modal-body" hx-swap="innerHTML"
+            hx-trigger="click" hx-on="htmx:afterRequest:openModal">
+            <td hx-get="/{{ product.id }}" hx-target="#modal-body" hx-swap="innerHTML"
+                hx-trigger="click" hx-on="htmx:afterRequest:openModal">{{ product.title }}</td>
+            <td>{{ product.short_description }}</td>
+{#            <td>{{ product.description }}</td>#}
+            <td>
+                <button hx-get="/{{ product.id }}" hx-target="#modal-body" hx-swap="innerHTML"
+                        hx-trigger="click" hx-on="htmx:afterRequest:openModal">
+                    Edit
+                </button>
+                <button hx-delete="/{{ product.id }}" hx-target="#products" hx-swap="innerHTML">Delete</button>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{#{% endblock %}#}

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from sqladmin import Admin
+from fastapi.staticfiles import StaticFiles
 
 from src.admin import register_admin_views
 from src.authentication.views import router as auth_router
@@ -14,8 +15,9 @@ from src.common.databases.postgres import (
 )
 from src.general.views import router as status_router
 from src.routes import BaseRoutesPrefixes
-from src.users.views import user_router
 
+from src.users.views import user_router
+from src.ui.view import router as ui_router
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):  # noqa: ARG001
@@ -28,6 +30,9 @@ async def lifespan(application: FastAPI):  # noqa: ARG001
 def include_routes(application: FastAPI) -> None:
     application.include_router(
         router=status_router,
+    )
+    application.include_router(
+        router=ui_router,
     )
     application.include_router(
         router=auth_router,
@@ -59,6 +64,8 @@ def get_application() -> FastAPI:
     register_admin_views(admin)
 
     include_routes(application)
+
+    application.mount("/static", StaticFiles(directory="src/static"), name="static")
 
     return application
 
