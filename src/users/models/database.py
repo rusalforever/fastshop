@@ -45,4 +45,4 @@ class UserAddress(SQLModel, table=True):
     additional_info: Optional[str] = None
 
     user: User = Relationship(back_populates="addresses")
-
+    

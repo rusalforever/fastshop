@@ -35,3 +35,4 @@ class WriteMixin:
 class BaseService(ReadMixin, WriteMixin, Generic[PType]):
     def __init__(self, repository: BaseSQLAlchemyRepository[T]):
         self.repository = repository
+        

@@ -19,3 +19,4 @@ class Company(SQLModel, table=True):
     is_active: bool = True
     first_name: str
     last_name: str
+    

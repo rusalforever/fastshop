@@ -72,3 +72,4 @@ class BaseSQLAlchemyRepository(Generic[T]):
         statement = select(self.model).filter_by(**kwargs)
         result = await self.session.exec(statement)
         return result.all()
+    

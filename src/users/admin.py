@@ -26,3 +26,4 @@ class UserAddressAdmin(ModelView, model=UserAddress):
 def register_users_admin_views(admin):
     admin.add_view(UserAdmin)
     admin.add_view(UserAddressAdmin)
+    
