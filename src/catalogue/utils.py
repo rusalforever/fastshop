@@ -32,9 +32,9 @@ class ProductElasticManager:
             await products_index.create()
 
     @staticmethod
-    def build_product_search_query(keyword):
+    def build_product_search_query(keyword: str) -> dict:
         search = Search(
-            index='products_index',
+            index=PRODUCT_INDEX,
         ).query(
             'multi_match',
             query=keyword,
@@ -42,24 +42,28 @@ class ProductElasticManager:
         )
         return search.to_dict()
 
-    async def search_product(self, keyword):
-        query = self.build_product_search_query(keyword)
-        response = await self.client.search(body=query)
-        await self.client.close()
+    async def search_product(self, keyword: str) -> list[ProductElasticResponse]:
+        try:
+            query = self.build_product_search_query(keyword)
+            async with self.client as client:
+                response = await client.search(body=query)
+                
+            hits = response.get('hits', {}).get('hits', [])
+            sorted_hits = sorted(hits, key=lambda x: x.get('_score', 0), reverse=True)
 
-        hits = response.get('hits', {}).get('hits', [])
-        sorted_hits = sorted(hits, key=lambda x: x.get('_score', 0), reverse=True)
+            sorted_response = [
+                ProductElasticResponse(
+                    product_id=hit.get('_id', ''),
+                    title=hit.get('_source', {}).get('title', ''),
+                    score=hit.get('_score', {}),
+                )
+                for hit in sorted_hits
+            ]
 
-        sorted_response = [
-            ProductElasticResponse(
-                product_id=hit.get('_id', ''),
-                title=hit.get('_source', {}).get('title', ''),
-                score=hit.get('_score', {}),
-            )
-            for hit in sorted_hits
-        ]
-
-        return sorted_response
+            return sorted_response
+        except Exception as e:
+            print(f"Error during Elasticsearch query: {e}")
+            return []
 
     async def update_index(self, products: list[Product]) -> None:
         bulk_data = []

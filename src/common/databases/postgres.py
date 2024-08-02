@@ -1,18 +1,17 @@
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import (
     SQLModel,
-    create_engine,
 )
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.base_settings import base_settings
 
 
-engine = AsyncEngine(create_engine(base_settings.postgres.url, echo=True, future=True))
+engine = create_async_engine(base_settings.postgres.url, echo=True, future=True)
 
 
-async def init_db():
+async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 

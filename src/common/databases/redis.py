@@ -2,13 +2,12 @@
 Redis client.
 """
 from redis import asyncio as aioredis
-
 from src.base_settings import base_settings
 
 
 class RedisClient:
     """
-    Provide singleton clint for Redis.
+    Provide singleton client for Redis.
     """
 
     redis: aioredis.Redis = None
@@ -21,10 +20,12 @@ class RedisClient:
         Returns:
             Redis client instance.
         """
-        return cls.redis or aioredis.from_url(
-            f'redis://{base_settings.redis.host}:{base_settings.redis.port}',
-            decode_responses=True,
-        )
+        if cls.redis is None:
+            cls.redis = aioredis.from_url(
+                f'redis://{base_settings.redis.host}:{base_settings.redis.port}',
+                decode_responses=True,
+            )
+        return cls.redis
 
 
 def get_redis_client() -> aioredis.Redis:

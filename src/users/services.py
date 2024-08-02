@@ -1,31 +1,59 @@
-from typing import Optional
+from fastapi import APIRouter, BackgroundTasks, Depends
+from elasticsearch_dsl import Search, Index
+from .services import get_category_service
+from .services import CategoryService
+from src.common.databases.redis import get_redis_client
+from src.common.routes import BaseCrudPrefixes
 
-from fastapi import Depends
+class CategoryIndex:
+    _index = Index('category_index')
 
-from src.authentication.security import verify_password
-from src.common.service import BaseService
-from src.users.models.database import User
-from src.users.repository import (
-    UserRepository,
-    get_user_repository,
-)
+router = APIRouter()
 
+redis_client = get_redis_client()
 
-class UserService(BaseService[User]):
-    def __init__(self, repository: UserRepository):
-        super().__init__(repository)
+class CatalogueRoutesPrefixes:
+    product: str = '/product'
 
-    async def get_by_email(self, email: str):
-        return await self.repository.get_by_email(email=email)
+class ProductRoutesPrefixes(BaseCrudPrefixes):
+    search: str = '/search'
+    update_index: str = '/update-index'
 
-    async def authenticate(self, email: str, password: str) -> Optional[User]:
-        user = await self.get_by_email(email=email)
+@router.get(CatalogueRoutesPrefixes.product + ProductRoutesPrefixes.search)
+async def search_categories(query: str, category_service: CategoryService = Depends(get_category_service)):
+    """
+    Search for categories based on a query string.
+    
+    Args:
+        query: The query string to search for in category titles and descriptions.
+        
+    Returns:
+        A dictionary containing the search results.
+    """
+    search = Search(index=CategoryIndex._index._name).query("multi_match", query=query, fields=["title", "description"])
+    response = await search.execute()
+    return response.to_dict()
 
-        if user is None or not verify_password(plain_password=password, hashed_password=user.hashed_password):
-            return None
-        else:
-            return user
+@router.post(CatalogueRoutesPrefixes.product + ProductRoutesPrefixes.update_index)
+async def update_index(background_tasks: BackgroundTasks, category_service: CategoryService = Depends(get_category_service)):
+    """
+    Trigger a background task to update the category index.
+    
+    Args:
+        background_tasks: FastAPI BackgroundTasks instance to manage background tasks.
+        
+    Returns:
+        A message indicating that the index update has started.
+    """
+    background_tasks.add_task(category_service.update_category_index)
+    return {"message": "Index update started"}
 
-
-def get_user_service(repo: UserRepository = Depends(get_user_repository)) -> UserService:
-    return UserService(repository=repo)
+@router.get("/index-status")
+async def get_index_status(category_service: CategoryService = Depends(get_category_service)):
+    """
+    Get the current status of the category index update.
+    
+    Returns:
+        A dictionary containing the index status.
+    """
+    return {"status": category_service.get_index_status()}

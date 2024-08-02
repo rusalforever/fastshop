@@ -4,6 +4,8 @@ from elasticsearch.exceptions import ConnectionError
 from fastapi import Depends
 
 from src.base_settings import base_settings
+from .services import CategoryService
+from .services import CategoryRepository
 from src.catalogue.models.database import Product
 from src.catalogue.repository import (
     ProductRepository,
@@ -13,6 +15,10 @@ from src.catalogue.utils import ProductElasticManager
 from src.common.enums import TaskStatus
 from src.common.service import BaseService
 from src.general.schemas.task_status import TaskStatusModel
+from src.common.databases.redis import get_redis_client
+
+from src.catalogue.models.database import Category
+from src.catalogue.repository import CategoryRepository, get_category_repository
 
 
 class ProductService(BaseService[Product]):
@@ -45,3 +51,18 @@ class ProductService(BaseService[Product]):
 
 def get_product_service(repo: ProductRepository = Depends(get_product_repository)) -> ProductService:
     return ProductService(repository=repo)
+
+
+class CategoryService(BaseService[Category]):
+    def __init__(self, repository: CategoryRepository, redis_client):
+        super().__init__(repository)
+        self.redis_client = redis_client
+
+    async def update_category_index(self):
+        pass
+
+    def get_index_status(self):
+        return "status"
+
+def get_category_service(repo: CategoryRepository = Depends(get_category_repository), redis_client = Depends(get_redis_client)) -> CategoryService:
+    return CategoryService(repository=repo, redis_client=redis_client)

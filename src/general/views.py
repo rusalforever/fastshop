@@ -48,18 +48,18 @@ def health_check() -> DetailsResponse:
 )
 async def get_status(uuid: UUID, response: Response) -> Union[TaskStatusModel, ErrorResponse]:
     """
-    Endpoint for check status of task action by unique ID.
+    Endpoint for checking the status of a task action by unique ID.
     Args:
-        uuid: unique ID of the task action.
+        uuid: Unique ID of the task action.
         response: Response instance.
 
     Returns:
-        Response with task status.
+        Response with task status or error message if not found.
     """
-    transfer_status = await TaskStatusModel.get_from_redis(uuid=uuid)
+    task_status = await TaskStatusModel.get_from_redis(uuid=uuid)
 
-    if transfer_status is None:
+    if task_status is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(message=f'Task with UUID {uuid} does not exist.')
 
-    return transfer_status
+    return task_status
