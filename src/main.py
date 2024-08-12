@@ -2,12 +2,13 @@ from fastapi import FastAPI
 from sqladmin import Admin
 
 from src.admin import register_admin_views
-from src.base_settings import base_settings
-from src.catalogue.views import product_router
+from src.base_settings import ProjectSettings
+from src.catalogue.views import product_router, category_router
 from src.common.databases.postgres import postgres
 from src.general.views import router as status_router
 from src.routes import BaseRoutesPrefixes
 
+base_settings = ProjectSettings(api_key="your_api_key_here")
 
 def include_routes(application: FastAPI) -> None:
     application.include_router(
@@ -18,7 +19,15 @@ def include_routes(application: FastAPI) -> None:
         prefix=BaseRoutesPrefixes.catalogue,
         tags=['Catalogue'],
     )
+    application.include_router(
+        router=category_router,
+        prefix=BaseRoutesPrefixes.catalogue,
+        tags=['Catalogue', 'Category'],
+    )
 
+    @application.get("/scr")
+    async def get_scr():
+        return {"message": "This is the scr endpoint"}
 
 def get_application() -> FastAPI:
     application = FastAPI(
@@ -40,8 +49,6 @@ def get_application() -> FastAPI:
         await postgres.disconnect()
 
     include_routes(application)
-
     return application
-
 
 app = get_application()

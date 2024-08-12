@@ -16,3 +16,4 @@ class ObjectDoesNotExistException(CustomExceptionError):
 class ObjectAlreadyExistException(CustomExceptionError):
     def __init__(self) -> None:
         self.message = 'Object already exist.'
+        

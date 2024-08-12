@@ -91,4 +91,4 @@ class ProductDiscount(Base):
     valid_to = Column(DateTime)
 
     product = relationship('Product', back_populates='discounts')
-
+    

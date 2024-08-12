@@ -1,11 +1,9 @@
 from typing import Optional
-
 from pydantic import BaseModel
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
 )
-
 
 class PostgresSettings(BaseModel):
     user: str = 'user'
@@ -15,9 +13,8 @@ class PostgresSettings(BaseModel):
     port: str = 5432
     url: str = 'postgresql+asyncpg://user:password@db:5432/fastapi_shop'
 
-
 class ProjectSettings(BaseSettings):
-    api_key: str
+    api_key: Optional[str] = "default_api_key"
     debug: Optional[bool] = True
     api_logger_format: Optional[str] = '%(levelname)s: %(asctime)s - %(message)s'
 
@@ -31,5 +28,6 @@ class ProjectSettings(BaseSettings):
         extra='ignore',
     )
 
-
 base_settings = ProjectSettings()
+
+print(f"API_KEY loaded: {base_settings.api_key}")
