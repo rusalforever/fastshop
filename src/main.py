@@ -1,69 +1,57 @@
+from typing import Optional
+from pydantic import BaseModel, Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from fastapi import FastAPI
-from sqladmin import Admin
 
-from src.admin import register_admin_views
-from src.authentication.views import router as auth_router
-from src.base_settings import base_settings
-from src.catalogue.views import product_router
-from src.common.databases.mongo_db import init_mongo_db
-from src.common.databases.postgres import postgres
-from src.general.views import router as status_router
-from src.reviews.views import product_reviews_router
-from src.routes import BaseRoutesPrefixes
-from src.users.views import user_router
+class MongoSettings(BaseModel):
+    url: str = Field(default='mongodb://mongo-db:27017/fastshop', env='MONGO_URL')
+    direct_connection: bool = Field(default=False, env='MONGO_DIRECT_CONNECTION')
+    const_status_prepared: str = Field(default='prepared', env='MONGO_CONST_STATUS_PREPARED')
 
+class PostgresSettings(BaseModel):
+    user: str = Field(default='user', env='POSTGRES_USER')
+    password: SecretStr = Field(default='password', env='POSTGRES_PASSWORD')
+    db: str = Field(default='fastapi_shop', env='POSTGRES_DB')
+    host: str = Field(default='db', env='POSTGRES_HOST')
+    port: int = Field(default=5432, env='POSTGRES_PORT')
+    url: str = Field(default='postgresql+asyncpg://user:password@db:5432/fastapi_shop', env='POSTGRES_URL')
 
-def include_routes(application: FastAPI) -> None:
-    application.include_router(
-        router=status_router,
-    )
-    application.include_router(
-        router=auth_router,
-        prefix=BaseRoutesPrefixes.authentication,
-        tags=['Authentication'],
-    )
-    application.include_router(
-        router=product_router,
-        prefix=BaseRoutesPrefixes.catalogue,
-        tags=['Catalogue'],
-    )
-    application.include_router(
-        router=user_router,
-        prefix=BaseRoutesPrefixes.account,
-        tags=['Account'],
-    )
+class AuthorizationSettings(BaseModel):
+    secret_key: SecretStr = Field(default='default_secret_key', env='AUTH_SECRET_KEY')
+    algorithm: str = Field(default='HS256', env='AUTH_ALGORITHM')
+    access_token_expire_minutes: int = Field(default=30, gt=0, env='AUTH_ACCESS_TOKEN_EXPIRE_MINUTES')
+    crypt_schema: str = Field(default='bcrypt', env='AUTH_CRYPT_SCHEMA')
 
-    application.include_router(
-        router=product_reviews_router,
-        prefix=BaseRoutesPrefixes.reviews,
-        tags=['Reviews'],
+class ProjectSettings(BaseSettings):
+    api_key: SecretStr = Field(default="default_api_key", env='API_KEY')
+    debug: bool = Field(default=True, env='DEBUG')
+    api_logger_format: str = Field(default='%(levelname)s: %(asctime)s - %(message)s', env='API_LOGGER_FORMAT')
+
+    postgres: PostgresSettings = PostgresSettings()
+    auth: AuthorizationSettings = AuthorizationSettings()
+    mongo: MongoSettings = MongoSettings()
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter='__',
+        frozen=True,
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore',
     )
 
+base_settings = ProjectSettings()
 
-def get_application() -> FastAPI:
-    application = FastAPI(
-        debug=base_settings.debug,
-        docs_url=BaseRoutesPrefixes.swagger if base_settings.debug else None,
-        redoc_url=BaseRoutesPrefixes.redoc if base_settings.debug else None,
-        openapi_url=BaseRoutesPrefixes.openapi if base_settings.debug else None,
-    )
+app = FastAPI()
 
-    @application.on_event('startup')
-    async def startup():
-        postgres.connect(base_settings.postgres.url)
-        engine = postgres.get_engine()
-        admin = Admin(app=application, engine=engine)
-        register_admin_views(admin)
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
-        await init_mongo_db()
-
-    @application.on_event('shutdown')
-    async def shutdown():
-        await postgres.disconnect()
-
-    include_routes(application)
-
-    return application
-
-
-app = get_application()
+@app.get("/config")
+def read_config():
+    return {
+        "debug": base_settings.debug,
+        "database_url": base_settings.postgres.url,
+        "mongo_url": base_settings.mongo.url,
+        "token_expiration": base_settings.auth.access_token_expire_minutes
+    }

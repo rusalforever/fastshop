@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
 class Token(BaseModel):
-    access_token: str
+    access_token: str = Field(..., min_length=10)
     token_type: str
 
 
 class TokenData(BaseModel):
-    email: str | None = None
+    email: EmailStr | None = None
+    user_id: int | None = None
+    roles: list[str] | None = []

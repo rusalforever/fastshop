@@ -16,27 +16,36 @@ Base = declarative_base()
 
 class Database:
     def __init__(self):
-        self.__session = None
         self._engine = None
+        self._session = None
 
-    def connect(self, db_config):
+    def connect(self):
+        logger.info("Connecting to the PostgreSQL database.")
         self._engine = create_async_engine(
             url=base_settings.postgres.url,
+            echo=True,
         )
-
-        self.__session = async_sessionmaker(
+        self._session = async_sessionmaker(
             bind=self._engine,
             autocommit=False,
+            expire_on_commit=False,
         )
+        logger.info("Successfully connected to the PostgreSQL database.")
 
     async def disconnect(self):
-        await self._engine.dispose()
+        if self._engine:
+            await self._engine.dispose()
+            logger.info("Disconnected from the PostgreSQL database.")
 
     def get_engine(self):
+        if not self._engine:
+            raise RuntimeError("Engine not initialized. Call 'connect()' first.")
         return self._engine
 
     async def get_db(self):
-        async with postgres.__session() as session:
+        if not self._session:
+            raise RuntimeError("Session not initialized. Call 'connect()' first.")
+        async with self._session() as session:
             yield session
 
 

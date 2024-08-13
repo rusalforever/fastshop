@@ -1,47 +1,33 @@
 from typing import Optional
-
-from pydantic import (
-    BaseModel,
-    conint,
-)
-from pydantic_settings import (
-    BaseSettings,
-    SettingsConfigDict,
-)
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class MongoSettings(BaseModel):
-    """
-    Provide Mongo settings.
-    """
-
-    url: str = 'mongodb://mongo-db:27017/fastshop'
-    direct_connection: bool = False
+    url: str = Field(default='mongodb://mongo-db:27017/fastshop', env='MONGO_URL')
+    direct_connection: bool = Field(default=False, env='MONGO_DIRECT_CONNECTION')
     const_status_prepared: str = 'prepared'
 
-
 class PostgresSettings(BaseModel):
-    user: str = 'user'
-    password: str = 'password'
-    db: str = 'fastapi_shop'
-    host: str = 'db'
-    port: str = 5432
-    url: str = 'postgresql+asyncpg://user:password@db:5432/fastapi_shop'
-
+    user: str = Field(default='user', env='POSTGRES_USER')
+    password: str = Field(default='password', env='POSTGRES_PASSWORD')
+    db: str = Field(default='fastapi_shop', env='POSTGRES_DB')
+    host: str = Field(default='db', env='POSTGRES_HOST')
+    port: int = Field(default=5432, env='POSTGRES_PORT')
+    url: str = Field(default='postgresql+asyncpg://user:password@db:5432/fastapi_shop', env='POSTGRES_URL')
 
 class AuthorizationSettings(BaseModel):
-    secret_key: str
-    algorithm: str = 'HS256'
-    access_token_expire_minutes: conint(gt=0) = 30
-    crypt_schema: str = 'bcrypt'
-
+    secret_key: str = Field(default='default_secret_key', env='AUTH_SECRET_KEY')
+    algorithm: str = Field(default='HS256', env='AUTH_ALGORITHM')
+    access_token_expire_minutes: int = Field(default=30, gt=0, env='ACCESS_TOKEN_EXPIRE_MINUTES')
+    crypt_schema: str = Field(default='bcrypt', env='CRYPT_SCHEMA')
 
 class ProjectSettings(BaseSettings):
-    api_key: str
-    debug: Optional[bool] = True
-    api_logger_format: Optional[str] = '%(levelname)s: %(asctime)s - %(message)s'
+    api_key: str = Field(default="default_api_key", env='API_KEY')
+    debug: bool = Field(default=True, env='DEBUG')
+    api_logger_format: str = Field(default='%(levelname)s: %(asctime)s - %(message)s', env='API_LOGGER_FORMAT')
 
     postgres: PostgresSettings = PostgresSettings()
-    auth: AuthorizationSettings
+    auth: AuthorizationSettings = AuthorizationSettings()
     mongo: MongoSettings = MongoSettings()
 
     model_config = SettingsConfigDict(
@@ -51,6 +37,5 @@ class ProjectSettings(BaseSettings):
         env_file_encoding='utf-8',
         extra='ignore',
     )
-
 
 base_settings = ProjectSettings()
