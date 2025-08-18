@@ -2,15 +2,14 @@ FROM python:3.11
 
 WORKDIR /app
 
-COPY pyproject.toml pyproject.toml
+COPY pyproject.toml poetry.lock /app/
 
-RUN pip install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev
+RUN pip install poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-root
 
 COPY . /app
 
 RUN chmod +x ops/start-api.sh
-
 
 CMD ["sh", "ops/start-api.sh"]
