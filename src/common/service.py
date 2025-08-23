@@ -26,7 +26,7 @@ class WriteMixin:
         return await self.repository.create(instance_data)
 
     async def update(self, pk: int, update_data: PType) -> PType:
-        return await self.repository.update(id, update_data)
+        return await self.repository.update(pk, update_data)
 
     async def delete(self, pk: int):
         await self.repository.delete(pk=pk)
