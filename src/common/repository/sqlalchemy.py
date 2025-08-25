@@ -32,14 +32,14 @@ class BaseSQLAlchemyRepository(Generic[T, PType]):
         instance = result.scalar_one_or_none()
         if not instance:
             raise ObjectDoesNotExistException()
-        return self.pydantic_model.from_orm(instance)
+        return self.pydantic_model.model_validate(instance, from_attributes=True)
 
     async def create(self, instance_data: PType) -> PType:
         instance = self.model(**instance_data.model_dump())
         self.session.add(instance)
         await self.session.commit()
         await self.session.refresh(instance)
-        return self.pydantic_model.from_orm(instance)
+        return self.pydantic_model.model_validate(instance, from_attributes=True)
 
     async def update(self, pk: int, update_data: PType) -> PType:
         await self.session.execute(
@@ -56,7 +56,7 @@ class BaseSQLAlchemyRepository(Generic[T, PType]):
         stmt = select(self.model)
         result = await self.session.execute(stmt)
         instances = result.scalars().all()
-        return [self.pydantic_model.model_validate(instance) for instance in instances]
+        return [self.pydantic_model.model_validate(instance, from_attributes=True) for instance in instances]
 
     async def filter(self, **kwargs) -> List[PType]:
         stmt = select(self.model).filter_by(**kwargs)
