@@ -7,6 +7,10 @@ from src.catalogue.models.database import (
     ProductDiscount,
     ProductImage,
     StockRecord,
+    Basket,
+    BasketLine,
+    OrderLine,
+    Order,
 )
 
 
@@ -61,6 +65,36 @@ class ProductDiscountAdmin(ModelView, model=ProductDiscount):
     icon = 'fa-solid fa-percent'
     category = CATALOGUE_CATEGORY
 
+class BasketAdmin(ModelView, model=Basket):
+    column_list = [Basket.id, Basket.user_id, Basket.price, Basket.status]
+    column_searchable_list = [Basket.user_id, Basket.status]
+    form_columns = ['user_id', 'price', 'status']
+    icon = 'fa-solid fa-basket-shopping'
+    category = CATALOGUE_CATEGORY
+
+class BasketLineAdmin(ModelView, model=BasketLine):
+    column_list = [BasketLine.id, BasketLine.basket_id, BasketLine.product_id, BasketLine.quantity, BasketLine.price]
+    column_searchable_list = [BasketLine.basket_id, BasketLine.product_id]
+    form_columns = ['basket_id', 'product_id', 'quantity', 'price']
+    icon = 'fa-solid fa-cart-shopping'
+    category = CATALOGUE_CATEGORY
+
+class OrderLineAdmin(ModelView, model=OrderLine):
+    column_list = [OrderLine.id, OrderLine.product_id, OrderLine.order_id, OrderLine.quantity, OrderLine.price]
+    column_searchable_list = [OrderLine.product_id, OrderLine.order_id]
+    form_columns = ['order_id', 'product_id', 'quantity', 'price']
+    icon = 'fa-solid fa-clipboard-list'
+    category = CATALOGUE_CATEGORY
+
+class OrderAdmin(ModelView, model=Order):
+    column_list = [Order.id, Order.number, Order.shipping_method, Order.status, Order.total_price]
+    column_searchable_list = [Order.shipping_method, Order.status, Order.additional_info]
+    form_columns = ['number', 'basket_id', 'user_id', 'address_id',
+        'total_price', 'shipping_price', 'shipping_method',
+        'status', 'additional_info'
+    ]
+    icon = 'fa-solid fa-bag-shopping'
+    category = CATALOGUE_CATEGORY
 
 def register_products_admin_views(admin):
     admin.add_view(ProductAdmin)
@@ -69,3 +103,7 @@ def register_products_admin_views(admin):
     admin.add_view(ProductImageAdmin)
     admin.add_view(StockRecordAdmin)
     admin.add_view(ProductDiscountAdmin)
+    admin.add_view(BasketAdmin)
+    admin.add_view(BasketLineAdmin)
+    admin.add_view(OrderLineAdmin)
+    admin.add_view(OrderAdmin)
