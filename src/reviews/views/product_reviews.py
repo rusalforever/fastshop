@@ -8,6 +8,7 @@ from fastapi import (
     Depends,
     Response,
     status,
+    HTTPException,
 )
 
 from src.common.exceptions.base import ObjectDoesNotExistException
@@ -21,7 +22,8 @@ from src.reviews.routes import (
     ProductReviewRoutesPrefixes,
     ReviewsRoutesPrefixes,
 )
-from src.reviews.services import ProductReviewService
+from src.reviews.services import ProductReviewService, ProductAnalyticsService
+from src.reviews.repositories import ProductAnalyticsRepository, ProductReviewRepository
 
 
 router = APIRouter(prefix=ReviewsRoutesPrefixes.product_reviews)
@@ -113,3 +115,30 @@ async def add_reply_to_review(
         return ErrorResponse(message=exc.message)
 
     return response
+
+def get_review_service() -> ProductReviewService:
+    return ProductReviewService(ProductReviewRepository())
+
+
+def get_analytics_service() -> ProductAnalyticsService:
+    return ProductAnalyticsService(ProductAnalyticsRepository())
+
+
+@router.get("/{product_id}")
+async def product_detail(
+    product_id: int,
+    review_service: Annotated[ProductReviewService, Depends(get_review_service)],
+    analytics_service: Annotated[ProductAnalyticsService, Depends(get_analytics_service)],
+):
+    try:
+        product: ProductReview = await review_service.repository.get(pk=str(product_id))
+    except ObjectDoesNotExistException as exc:
+        raise HTTPException(status_code=404, detail=exc.message)
+
+    await analytics_service.log_visit(product_id)
+
+    return {
+        "id": str(product.id),
+        "title": product.title,
+        "description": product.description,
+    }
