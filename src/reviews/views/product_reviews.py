@@ -9,23 +9,24 @@ from fastapi import (
     Response,
     status,
 )
-
+from datetime import datetime
 from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.schemas.common import ErrorResponse
 from src.reviews.models.mongo import (
     BaseProductReview,
-    ProductReview,
+    ProductReview, ProductAnalytics,
     Reply,
 )
 from src.reviews.routes import (
     ProductReviewRoutesPrefixes,
-    ReviewsRoutesPrefixes,
+    ReviewsRoutesPrefixes
 )
-from src.reviews.services import ProductReviewService
+from src.reviews.services import ProductReviewService, ProductAnalyticsService
+from src.catalogue.services import ProductService
+from src.catalogue.models.pydantic import ProductModel
 
 
 router = APIRouter(prefix=ReviewsRoutesPrefixes.product_reviews)
-
 
 @router.get(
     ProductReviewRoutesPrefixes.root,
@@ -113,3 +114,19 @@ async def add_reply_to_review(
         return ErrorResponse(message=exc.message)
 
     return response
+
+
+
+
+@router.get("/catalogue/product/{pk}")
+async def product_detail(
+    pk: int,
+    analytics_service: ProductAnalyticsService = Depends()
+):
+    try:
+        await analytics_service.create_record(product_id=pk)
+    except Exception as e:
+        print(f"Analytics save failed: {e}")
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

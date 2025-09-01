@@ -20,6 +20,6 @@ async def init_mongo_db():
     await init_beanie(
         database=client.get_database(),
         document_models=[
-            ProductReview,
+            ProductReview
         ],
     )
