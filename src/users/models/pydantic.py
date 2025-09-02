@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from pydantic import (
     BaseModel,
@@ -11,8 +11,8 @@ class UserModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: Union[int, None] = None
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: EmailStr
     phone_number: str
 
