@@ -27,9 +27,9 @@ class UserAddressModel(BaseModel):
     id: Union[int, None] = None
     user_id: int
     title: Optional[str] = None
-    city: str
-    street: str
-    house: str
+    city: Optional[str] = None
+    street: Optional[str] = None
+    house: Optional[str] = None
     apartment: Optional[str] = None
     post_code: Optional[str] = None
     floor: Optional[str] = None

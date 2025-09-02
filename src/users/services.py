@@ -39,7 +39,7 @@ class UserAddressService(BaseService[UserAddressModel]):
     def __init__(self, repository: UserAddressRepository):
         super().__init__(repository)
 
-    async def get_user_addressed(self, user_id: int):
+    async def get_addresses_list(self, user_id: int):
         return await self.repository.filter(user_id=user_id)
 
     async def get_address_detail(self, address_id: int):
