@@ -9,8 +9,9 @@ from src.common.repository.sqlalchemy import BaseSQLAlchemyRepository
 from src.users.models.pydantic import (
     UserModel,
     UserWithPassword,
+    UserAddressModel,
 )
-from src.users.models.sqlalchemy import User
+from src.users.models.sqlalchemy import User, UserAddress
 
 
 class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
@@ -35,3 +36,12 @@ class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
 
 def get_user_repository(session: AsyncSession = Depends(get_session)) -> UserRepository:
     return UserRepository(session=session)
+
+
+class UserAddressRepository(BaseSQLAlchemyRepository[UserAddress, UserAddressModel]):
+    def __init__(self, session: AsyncSession):
+        super().__init__(model=UserAddress, pydantic_model=UserAddressModel, session=session)
+
+
+def get_user_address_repository(session: AsyncSession = Depends(get_session)) -> UserAddressRepository:
+    return UserAddressRepository(session=session)
