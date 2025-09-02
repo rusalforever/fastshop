@@ -1,67 +1,61 @@
-from typing import (
-    Annotated,
-    Union,
-)
+from typing import Annotated, Union
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    Response,
-    status,
-)
+from fastapi import APIRouter, Depends, Response, status
 
-from src.catalogue.models.pydantic import ProductModel
-from src.catalogue.routes import (
-    CatalogueRoutesPrefixes,
-    ProductRoutesPrefixes,
-)
-from src.catalogue.services import get_product_service
-from src.common.exceptions.base import ObjectDoesNotExistException
+from src.authentication.utils import get_current_user
 from src.common.schemas.common import ErrorResponse
-
-
-router = APIRouter(prefix=CatalogueRoutesPrefixes.product)
-
-
-@router.get(
-    ProductRoutesPrefixes.root,
-    status_code=status.HTTP_200_OK,
-    response_model=list[ProductModel],
+from src.users.models.pydantic import (
+    UserModel,
+    UserAddressDetail,
+    UserAddressListItem,
 )
-async def product_list(product_service: Annotated[get_product_service, Depends()]) -> list[ProductModel]:
-    """
-    Get list of products.
+from src.users.routes import UserManagementRoutesPrefixes, UserRoutesPrefixes
+from src.users.services import get_user_address_service
+from src.common.exceptions.base import ObjectDoesNotExistException
 
-    Returns:
-        Response with list of products.
-    """
-    return await product_service.list()
+
+router = APIRouter(prefix=f"{UserManagementRoutesPrefixes.user}{UserManagementRoutesPrefixes.addresses}")
 
 
 @router.get(
-    ProductRoutesPrefixes.detail,
+    UserRoutesPrefixes.root,
+    status_code=status.HTTP_200_OK,
+    response_model=list[UserAddressListItem],
+)
+async def user_address_list(
+    current_user: Annotated[UserModel, Depends(get_current_user)],
+    service: Annotated[get_user_address_service, Depends()],
+) -> list[UserAddressListItem]:
+    return await service.list_by_user(user_id=current_user.id)
+
+
+@router.get(
+    UserRoutesPrefixes.detail,
     responses={
-        status.HTTP_200_OK: {'model': ProductModel},
+        status.HTTP_200_OK: {'model': UserAddressDetail},
+        status.HTTP_403_FORBIDDEN: {'model': ErrorResponse},
         status.HTTP_404_NOT_FOUND: {'model': ErrorResponse},
     },
     status_code=status.HTTP_200_OK,
-    response_model=Union[ProductModel, ErrorResponse],
+    response_model=Union[UserAddressDetail, ErrorResponse],
 )
-async def product_detail(
+async def user_address_detail(
     response: Response,
     pk: int,
-    service: Annotated[get_product_service, Depends()],
-) -> Union[Response, ErrorResponse]:
-    """
-    Retrieve product.
+    current_user: Annotated[UserModel, Depends(get_current_user)],
+    service: Annotated[get_user_address_service, Depends()],
+) -> Union[UserAddressDetail, ErrorResponse]:
+    instance = await service.get_sqlalchemy(pk=pk)
+    if instance is None:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return ErrorResponse(message="Address does not exist")
 
-    Returns:
-        Response with product details.
-    """
+    if instance.user_id != current_user.id:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return ErrorResponse(message="You do not have permission to access this address")
+
     try:
-        response = await service.detail(pk=pk)
+        return await service.detail(pk=pk)
     except ObjectDoesNotExistException as exc:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(message=exc.message)
-
-    return response
