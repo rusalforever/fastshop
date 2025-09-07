@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,8 +9,9 @@ from src.common.repository.sqlalchemy import BaseSQLAlchemyRepository
 from src.users.models.pydantic import (
     UserModel,
     UserWithPassword,
+    UserAddressModel,
 )
-from src.users.models.sqlalchemy import User
+from src.users.models.sqlalchemy import User, UserAddress
 
 
 class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
@@ -32,6 +33,23 @@ class UserRepository(BaseSQLAlchemyRepository[User, UserModel]):
 
         return UserWithPassword.model_validate(user)
 
-
 def get_user_repository(session: AsyncSession = Depends(get_session)) -> UserRepository:
     return UserRepository(session=session)
+
+class UserAddressRepository(BaseSQLAlchemyRepository[UserAddress, UserAddressModel]):
+    def __init__(self, session: AsyncSession):
+        super().__init__(model=UserAddress, pydantic_model=UserAddressModel, session=session)
+
+    async def get_by_user_id(self, user_id: int) -> List[UserAddressModel]:
+        return await self.filter(user_id=user_id)
+
+    async def get_one_by_user(self, user_id: int, address_id: int) -> UserAddressModel | None:
+        stmt = select(self.model).where(self.model.id == address_id, self.model.user_id == user_id)
+        result = await self.session.execute(stmt)
+        instance = result.scalar_one_or_none()
+        if not instance:
+            return None
+        return self.pydantic_model.model_validate(instance)
+
+def get_user_address_repository(session: AsyncSession = Depends(get_session)) -> UserAddressRepository:
+    return UserAddressRepository(session=session)

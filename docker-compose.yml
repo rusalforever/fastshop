@@ -11,7 +11,8 @@ services:
       - db
     networks:
       - web_network
-
+    env_file:
+      - env.example
   db:
     image: postgres:13
     volumes:
