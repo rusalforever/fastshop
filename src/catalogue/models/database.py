@@ -24,6 +24,26 @@ class Product(SQLModel, table=True):
     images: List["ProductImage"] = Relationship(back_populates="product")
     stock_records: List["StockRecord"] = Relationship(back_populates="product")
     discounts: List["ProductDiscount"] = Relationship(back_populates="product")
+    
+    # Relationships for Additional Products
+    additional_products_as_primary: List["AdditionalProducts"] = Relationship(
+        back_populates="primary_product",
+        sa_relationship_kwargs={"foreign_keys": "AdditionalProducts.primary_id"}
+    )
+    additional_products_as_additional: List["AdditionalProducts"] = Relationship(
+        back_populates="additional_product",
+        sa_relationship_kwargs={"foreign_keys": "AdditionalProducts.additional_id"}
+    )
+    
+    # Relationships for Recommended Products
+    recommended_products_as_primary: List["RecommendedProducts"] = Relationship(
+        back_populates="primary_product",
+        sa_relationship_kwargs={"foreign_keys": "RecommendedProducts.primary_id"}
+    )
+    recommended_products_as_recommended: List["RecommendedProducts"] = Relationship(
+        back_populates="recommended_product",
+        sa_relationship_kwargs={"foreign_keys": "RecommendedProducts.recommended_id"}
+    )
 
 class ProductCategory(SQLModel, table=True):
     __tablename__ = 'product_categories'
@@ -90,3 +110,41 @@ class ProductDiscount(SQLModel, table=True):
     valid_to: datetime
 
     product: Product = Relationship(back_populates="discounts")
+
+
+class AdditionalProducts(SQLModel, table=True):
+    """Model for additional products."""
+    __tablename__ = 'additional_products'
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    primary_id: int = Field(foreign_key="products.id")
+    additional_id: int = Field(foreign_key="products.id")
+    
+    # Relationships
+    primary_product: Product = Relationship(
+        back_populates="additional_products_as_primary",
+        sa_relationship_kwargs={"foreign_keys": "AdditionalProducts.primary_id"}
+    )
+    additional_product: Product = Relationship(
+        back_populates="additional_products_as_additional",
+        sa_relationship_kwargs={"foreign_keys": "AdditionalProducts.additional_id"}
+    )
+
+
+class RecommendedProducts(SQLModel, table=True):
+    """Model for recommended products."""
+    __tablename__ = 'recommended_products'
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    primary_id: int = Field(foreign_key="products.id")
+    recommended_id: int = Field(foreign_key="products.id")
+    
+    # Relationships
+    primary_product: Product = Relationship(
+        back_populates="recommended_products_as_primary",
+        sa_relationship_kwargs={"foreign_keys": "RecommendedProducts.primary_id"}
+    )
+    recommended_product: Product = Relationship(
+        back_populates="recommended_products_as_recommended",
+        sa_relationship_kwargs={"foreign_keys": "RecommendedProducts.recommended_id"}
+    )
