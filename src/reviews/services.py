@@ -7,8 +7,9 @@ from src.common.service import BaseService
 from src.reviews.models.mongo import (
     ProductReview,
     Reply,
+    ProductAnalytics
 )
-from src.reviews.repositories import ProductReviewRepository
+from src.reviews.repositories import ProductReviewRepository, ProductAnalyticsRepository
 
 
 class ProductReviewService(BaseService):
@@ -44,3 +45,16 @@ class ProductReviewService(BaseService):
         review.replies.append(reply.model_dump())
 
         return await review.save()
+
+
+class ProductAnalyticsService(BaseService):
+    def __init__(
+            self,
+            repository: Annotated[ProductAnalyticsRepository, Depends(ProductAnalyticsRepository)]
+    ):
+        super().__init__(repository=repository)
+
+    async def track_product_visit(self, product_id: int) -> ProductAnalytics:
+        """Track a product page visit by creating an analytics record."""
+        analytics_record = ProductAnalytics(product_id=product_id)
+        return await self.repository.create(analytics_record)
