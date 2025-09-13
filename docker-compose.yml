@@ -1,4 +1,4 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   web:
@@ -9,7 +9,7 @@ services:
       - "8000:8000"
     env_file:
       - ./ops/environment/.default.env
-      - ./ops/environment/.local.env
+      - ./ops/environment/.env
     depends_on:
       - db
     networks:
