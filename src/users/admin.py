@@ -1,6 +1,6 @@
 from sqladmin import ModelView
 
-from src.users.models.sqlalchemy import (
+from src.users.models.database import (
     User,
     UserAddress,
 )
@@ -23,6 +23,6 @@ class UserAddressAdmin(ModelView, model=UserAddress):
     category = ADMIN_CATEGORY
 
 
-def register_hr_admin_views(admin):
+def register_users_admin_views(admin):
     admin.add_view(UserAdmin)
     admin.add_view(UserAddressAdmin)
