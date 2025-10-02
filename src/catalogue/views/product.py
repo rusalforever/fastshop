@@ -40,7 +40,6 @@ async def product_list(product_service: Annotated[get_product_service, Depends()
     """
     return await product_service.list()
 
-
 @router.get(
     ProductRoutesPrefixes.detail,
     responses={
@@ -68,7 +67,6 @@ async def product_detail(
         return ErrorResponse(message=exc.message)
 
     return response
-
 
 @router.get(
     ProductRoutesPrefixes.search,
