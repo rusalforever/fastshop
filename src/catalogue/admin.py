@@ -1,11 +1,13 @@
 from sqladmin import ModelView
 
 from src.catalogue.models.database import (
+    AdditionalProduct,
     Category,
     Product,
     ProductCategory,
     ProductDiscount,
     ProductImage,
+    RecommendedProduct,
     StockRecord,
 )
 
@@ -62,6 +64,22 @@ class ProductDiscountAdmin(ModelView, model=ProductDiscount):
     category = CATALOGUE_CATEGORY
 
 
+class AdditionalProductsAdmin(ModelView, model=AdditionalProduct):
+    column_list = [AdditionalProduct.primary_product, AdditionalProduct.additional_product]
+    column_searchable_list = [AdditionalProduct.primary_id, AdditionalProduct.additional_id]
+    form_columns = ['primary_product', 'additional_product']
+    icon = 'fa-solid fa-plus'
+    category = CATALOGUE_CATEGORY
+
+
+class RecommendedProductsAdmin(ModelView, model=RecommendedProduct):
+    column_list = [RecommendedProduct.primary_product, RecommendedProduct.recommended_product]
+    column_searchable_list = [RecommendedProduct.primary_id, RecommendedProduct.recommended_id]
+    form_columns = ['primary_product', 'recommended_product']
+    icon = 'fa-solid fa-star'
+    category = CATALOGUE_CATEGORY
+
+
 def register_products_admin_views(admin):
     admin.add_view(ProductAdmin)
     admin.add_view(ProductCategoryAdmin)
@@ -69,3 +87,5 @@ def register_products_admin_views(admin):
     admin.add_view(ProductImageAdmin)
     admin.add_view(StockRecordAdmin)
     admin.add_view(ProductDiscountAdmin)
+    admin.add_view(AdditionalProductsAdmin)
+    admin.add_view(RecommendedProductsAdmin)

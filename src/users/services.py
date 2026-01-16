@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import Depends
 
 from src.authentication.security import verify_password
+from src.common.exceptions.base import ObjectDoesNotExistException
 from src.common.service import BaseService
 from src.users.models.database import User
 from src.users.repository import (
@@ -15,8 +16,11 @@ class UserService(BaseService[User]):
     def __init__(self, repository: UserRepository):
         super().__init__(repository)
 
-    async def get_by_email(self, email: str):
-        return await self.repository.get_by_email(email=email)
+    async def get_by_email(self, email: str) -> Optional[User]:
+        try:
+            return await self.repository.get_by_email(email=email)
+        except ObjectDoesNotExistException:
+            return None
 
     async def authenticate(self, email: str, password: str) -> Optional[User]:
         user = await self.get_by_email(email=email)
